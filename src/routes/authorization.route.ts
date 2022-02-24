@@ -1,22 +1,26 @@
 import { NextFunction, Request, Response, Router } from "express";
+import JWT from 'jsonwebtoken';
+import basicAuthenticationMiddleware from "../middlewares/basic-authentication.middleware";
 import ForbiddenError from "../models/errors/forbidden.error.model";
 
 const authorizationRoute = Router();
 
-authorizationRoute.post('/token', (req: Request, res: Response, next: NextFunction) => {
+authorizationRoute.post('/token', basicAuthenticationMiddleware, async (req: Request, res: Response, next: NextFunction) => {
 
   try {
-    const authorizationHeader = req.headers['authorization'];
+    const user = req.user;
 
-    if(!authorizationHeader) {
-      throw new ForbiddenError("Credenciais não informadas.");
+    if(!user) {
+      throw new ForbiddenError("Usuário não informado.")
     }
-
-    const [authenticationType, token] = authorizationHeader.split(' ');
-
-    if(authenticationType !== "Basic" || !token) {
-      throw new ForbiddenError("Tipo de autenticação inválido.");
-    }
+ 
+    const jwtPayload = { username: user.username };
+    const secretKey = 'my_secret_key';
+    const jwtOptions = { subject: user?.uuid };
+    
+    const jwt = JWT.sign(jwtPayload, secretKey, jwtOptions);
+    
+    res.status(200).json({ token: jwt });
 
   } catch (err) {
     next(err);
