@@ -3,11 +3,6 @@ import userRepository from '../repositories/user.repository';
 
 const usersRoute = Router();
 
-usersRoute.get('/users', async (req: Request, res: Response, next: NextFunction) => {
-  const users = await userRepository.findAllUsers();
-  res.status(200).send(users);
-});
-
 usersRoute.get('/users/:uuid', async (req: Request<{ uuid: string }>, res: Response, next: NextFunction) => {
   try {
     const { uuid } = req.params; 
@@ -16,6 +11,11 @@ usersRoute.get('/users/:uuid', async (req: Request<{ uuid: string }>, res: Respo
   } catch (err) {
     next(err);
   }
+});
+
+usersRoute.get('/users', async (req: Request, res: Response, next: NextFunction) => {
+  const users = await userRepository.findAllUsers();
+  res.status(200).send(users);
 });
 
 usersRoute.post('/users', async (req: Request, res: Response, next: NextFunction) => {
